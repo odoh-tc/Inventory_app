@@ -20,43 +20,33 @@ async def add_product(supplier_id: int, product_info: product_pydanticIn):
     product_info["revenue"] += product_info["quantity_sold"] * product_info["unit_price"]
     product_obj = await Product.create(**product_info, supplied_by = supplier)
     response = await product_pydantic.from_tortoise_orm(product_obj)
-    return {
-        "message": "Product added successfully",
-        "data": response,
-    }
+    return {"status": "ok", "data": response}
 
 @product_router.get("/")
 async def get_all_product():
     response = await product_pydantic.from_queryset(Product.all())
-    return {
-        "data": response,
-        "count": len(response),
-        "message": "Product fetched successfully",
-    }
+    return {"status": "ok", "data": response}
 
 
-@product_router.get("/{product_id}/")
-async def get_specific_product(product_id: int):
+@product_router.get("/{id}/")
+async def get_specific_product(id: int):
     try:
-        response = await product_pydantic.from_queryset_single(Product.get(id=product_id))
+        response = await product_pydantic.from_queryset_single(Product.get(id=id))
     except DoesNotExist:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Product not found",
         )
-    return {
-        "data": response,
-        "message": "Product fetched successfully",
-    }
+    return {"status": "ok", "data": response}
 
-@product_router.put("/{product_id}")
-async def update_product(product_id: int, product_info: product_pydanticIn):
+@product_router.put("/{id}")
+async def update_product(id: int, product_info: product_pydanticIn):
     try:
-        product_obj = await Product.get(id=product_id)
+        product_obj = await Product.get(id=id)
     except DoesNotExist:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Product with id {product_id} not found",
+            detail=f"Product with id {id} not found",
         )
     product_info = product_info.dict(exclude_unset=True)
     product_obj.name = product_info["name"]
@@ -66,26 +56,24 @@ async def update_product(product_id: int, product_info: product_pydanticIn):
     product_obj.unit_price = product_info["unit_price"]
     await product_obj.save()
     response = await product_pydantic.from_tortoise_orm(product_obj)
-    return {
-        "message": "Product updated successfully",
-        "data": response,
-    }
+    return {"status": "ok", "data": response}
 
-@product_router.delete("/{product_id}")
-async def delete_product(product_id: int):
-    try:
-        product_obj = await Product.get(id=product_id)
-    except DoesNotExist:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Product with id {product_id} not found",
-        )
-    await product_obj.delete()
-    return {
-        "message": "Product deleted successfully",
-    }
+# @product_router.delete("/{product_id}")
+# async def delete_product(product_id: int):
+#     try:
+#         product_obj = await Product.get(id=product_id)
+#     except DoesNotExist:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND,
+#             detail=f"Product with id {product_id} not found",
+#         )
+#     await product_obj.delete()
+#     return {"status": "ok"}
 
-
+@product_router.delete('/{id}')
+async def delete_product(id: int):
+    await Product.filter(id = id).delete()
+    return {"status": "ok"}
 
 
 

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from models import Product
 from schema.supplier import supplier_pydantic, supplier_pydanticIn, Supplier
 from tortoise.exceptions import DoesNotExist
 
@@ -10,32 +11,28 @@ supplier_router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-@supplier_router.post("/")
+
+@supplier_router.post('/')
 async def add_supplier(supplier_info: supplier_pydanticIn):
     supplier_obj = await Supplier.create(**supplier_info.dict(exclude_unset=True))
     response = await supplier_pydantic.from_tortoise_orm(supplier_obj)
-    return {
-        "message": "Supplier added successfully",
-        "data": response,
-    }
+    return {"status": "ok", "data" : response}
 
-@supplier_router.get("/")
-async def get_all_supplier():
+
+
+@supplier_router.get('/')
+async def get_all_suppliers():
     response = await supplier_pydantic.from_queryset(Supplier.all())
-    return {
-        "data": response,
-        "count": len(response),
-        "message": "Supplier fetched successfully",
-    }
+    return {"status": "ok", "data": response}
+
 
 @supplier_router.get("/{supplier_id}")
 async def get_specific_supplier(supplier_id: int):
 
     response = await supplier_pydantic.from_queryset_single(Supplier.get(id=supplier_id))
-    return {
-        "data": response,
-        "message": "Supplier fetched successfully",
-    }
+    return {"status": "ok", "data": response}
+
+
 
 @supplier_router.put("/{supplier_id}")
 async def update_supplier(supplier_id: int, supplier_info: supplier_pydanticIn):
@@ -50,10 +47,7 @@ async def update_supplier(supplier_id: int, supplier_info: supplier_pydanticIn):
     await supplier_obj.update_from_dict(supplier_info.dict(exclude_unset=True))
     await supplier_obj.save()
     response = await supplier_pydantic.from_tortoise_orm(supplier_obj)
-    return {
-        "message": "Supplier updated successfully",
-        "data": response,
-    }
+    return {"status": "ok", "data": response}
 
 @supplier_router.delete("/{supplier_id}")
 async def delete_supplier(supplier_id: int):
@@ -65,6 +59,4 @@ async def delete_supplier(supplier_id: int):
             detail=f"Supplier with id {supplier_id} not found",
         )
     await supplier_obj.delete()
-    return {
-        "message": "Supplier deleted successfully",
-    }
+    return {"status": "ok"}
