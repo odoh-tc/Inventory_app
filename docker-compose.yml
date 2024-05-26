@@ -3,7 +3,7 @@ version: "3.8"
 services:
   api:
     build:
-      context: ./api
+      context: ./
       dockerfile: Dockerfile
     container_name: api
     ports:
@@ -21,7 +21,7 @@ services:
 
   frontend:
     build:
-      context: ./frontend
+      context: ./
       dockerfile: Dockerfile_
     container_name: frontend
     ports:
