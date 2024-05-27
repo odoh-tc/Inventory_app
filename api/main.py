@@ -28,7 +28,7 @@ app.include_router(auth_router)
 
 @app.get('/')
 def home():
-    return {"Message": "Please go to /docs for the API documentation"}
+    return {"Message": "This is the home page of the API. Please go to /docs for the API documentation"}
 
 
 register_tortoise(
